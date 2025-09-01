@@ -1,0 +1,53 @@
+# FastAPI Example Specific .gitignore
+# This extends the main project .gitignore
+
+# RSA Keys (CRITICAL: Never commit these!)
+private.key
+public.key
+*.pem
+*.key
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# Local development files
+local_config.py
+dev_config.json
+
+# Test files
+test_*.py
+*_test.py
+tests/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# IDE specific
+.vscode/settings.json
+.idea/workspace.xml
+
+# Vercel deployment
+.vercel/
+
+# Local database
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,34 @@
+# Flask Example Specific .gitignore
+
+# RSA Keys (CRITICAL: Never commit these!)
+private.key
+public.key
+*.pem
+*.key
+
+# Flask specific
+instance/
+.webassets-cache
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# IDE specific
+.vscode/settings.json
+.idea/workspace.xml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+.tmp/

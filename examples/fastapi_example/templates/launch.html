@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LTI Launch - FastAPI Example</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .info-box {
+        background: #e8f4fd;
+        border: 1px solid #bee5eb;
+        border-radius: 5px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      .warning-box {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 5px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      .data-section {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      .data-item {
+        margin: 10px 0;
+        padding: 10px;
+        background: white;
+        border-radius: 3px;
+        border-left: 4px solid #007bff;
+      }
+      .data-label {
+        font-weight: bold;
+        color: #495057;
+        margin-bottom: 5px;
+      }
+      .data-value {
+        font-family: monospace;
+        background: #e9ecef;
+        padding: 5px 10px;
+        border-radius: 3px;
+        word-break: break-all;
+      }
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 10px 5px;
+      }
+      .btn:hover {
+        background: #0056b3;
+      }
+      .btn-secondary {
+        background: #6c757d;
+      }
+      .btn-secondary:hover {
+        background: #545b62;
+      }
+      .status {
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .status.success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+      }
+      .status.error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+      }
+      .status.info {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🚀 LTI Launch Information</h1>
+
+      <div class="info-box">
+        <h3>LTI Launch Status</h3>
+        <p>
+          This page displays information about the LTI launch. If you're seeing
+          this page directly, it means you haven't launched the tool through an
+          LTI platform yet.
+        </p>
+      </div>
+
+      <div class="warning-box">
+        <h3>⚠️ No Launch Data Available</h3>
+        <p>To see actual LTI launch data, you need to:</p>
+        <ol>
+          <li>
+            Configure this tool in your LTI platform (Canvas, Moodle, etc.)
+          </li>
+          <li>Launch the tool from within a course</li>
+          <li>
+            The platform will send launch data to the
+            <code>/launch</code> endpoint
+          </li>
+        </ol>
+      </div>
+
+      <div class="data-section">
+        <h3>📋 Expected Launch Data Structure</h3>
+        <p>When properly launched, you'll see data like this:</p>
+
+        <div class="data-item">
+          <div class="data-label">Launch Type</div>
+          <div class="data-value">Resource Launch or Deep Link Launch</div>
+        </div>
+
+        <div class="data-item">
+          <div class="data-label">User Information</div>
+          <div class="data-value">Name, email, roles, etc.</div>
+        </div>
+
+        <div class="data-item">
+          <div class="data-label">Context Information</div>
+          <div class="data-value">Course ID, course name, etc.</div>
+        </div>
+
+        <div class="data-item">
+          <div class="data-label">Resource Link</div>
+          <div class="data-value">Resource ID, title, description</div>
+        </div>
+
+        <div class="data-item">
+          <div class="data-label">Available Services</div>
+          <div class="data-value">
+            Assignments & Grades, Names & Roles, etc.
+          </div>
+        </div>
+      </div>
+
+      <div class="data-section">
+        <h3>🔧 Testing the Tool</h3>
+        <p>You can test the tool's endpoints:</p>
+
+        <a href="/health" class="btn">Health Check</a>
+        <a href="/jwks" class="btn btn-secondary">View JWKS</a>
+        <a href="/" class="btn btn-secondary">Back to Home</a>
+      </div>
+
+      <div class="data-section">
+        <h3>📚 LTI 1.3 Launch Flow</h3>
+        <ol>
+          <li>
+            <strong>Platform Initiation</strong>: LTI platform sends login
+            request to <code>/login</code>
+          </li>
+          <li>
+            <strong>OIDC Authentication</strong>: Tool authenticates with
+            platform using OpenID Connect
+          </li>
+          <li>
+            <strong>Redirect Back</strong>: Tool redirects back to platform with
+            authentication tokens
+          </li>
+          <li>
+            <strong>Message Launch</strong>: Platform sends launch message to
+            <code>/launch</code>
+          </li>
+          <li>
+            <strong>Content Display</strong>: Tool validates launch and displays
+            content
+          </li>
+        </ol>
+      </div>
+
+      <div class="data-section">
+        <h3>🔐 Security Features</h3>
+        <ul>
+          <li>
+            <strong>JWT Validation</strong>: All messages are cryptographically
+            signed
+          </li>
+          <li><strong>Nonce Verification</strong>: Prevents replay attacks</li>
+          <li>
+            <strong>Deployment ID Validation</strong>: Ensures tool is launched
+            from authorized context
+          </li>
+          <li>
+            <strong>Scope Checking</strong>: Verifies requested permissions
+          </li>
+        </ul>
+      </div>
+
+      <div class="info-box">
+        <h3>🚀 Next Steps</h3>
+        <p>To get this tool working:</p>
+        <ol>
+          <li>Generate RSA key pairs for JWT signing</li>
+          <li>Configure your LTI platform with the tool's URLs</li>
+          <li>Set the correct client ID and deployment ID</li>
+          <li>Test the integration from within your LMS</li>
+        </ol>
+      </div>
+    </div>
+  </body>
+</html>
