@@ -22,6 +22,7 @@ from pylti1p3.contrib.fastapi import (
     FastAPISessionService,
     FastAPICookieService
 )
+from pylti1p3.launch_data_storage.cache import CacheDataStorage
 
 # Create FastAPI app
 app = FastAPI(
@@ -39,19 +40,25 @@ templates = Jinja2Templates(directory="templates")
 LTI_CONFIG = {
     "https://canvas.instructure.com": [{
         "default": True,
-        "client_id": "your_client_id",
-        "auth_login_url": "https://canvas.instructure.com/login/oauth2/auth",
-        "auth_token_url": "https://canvas.instructure.com/login/oauth2/token",
-        "auth_audience": "https://canvas.instructure.com/login/oauth2/token",
-        "key_set_url": "https://canvas.instructure.com/api/lti/security/jwks",
+        "client_id": "10000000000001",
+        "auth_login_url": "https://lms.valis.jala-one.com/login/oauth2/auth",
+        "auth_token_url": "https://lms.valis.jala-one.com/login/oauth2/token",
+        "key_set_url": "https://lms.valis.jala-one.com/api/lti/security/jwks",
         "private_key_file": "private.key",
         "public_key_file": "public.key",
-        "deployment_ids": ["your_deployment_id"]
+        "deployment_ids": ["1:d89e331c21d21263871f13e1c0744565df26572c", "2:8ea1541666cdcdf85d9aae194078dbe76077af87"]
     }]
 }
 
 # Initialize tool configuration
 tool_conf = ToolConfDict(LTI_CONFIG)
+
+# Launch data storage (similar to Flask example)
+def get_launch_data_storage():
+    """Get launch data storage instance."""
+    # For FastAPI, we'll use a simple in-memory cache
+    # In production, you might want to use Redis or database storage
+    return CacheDataStorage()
 
 # Load keys (in production, load from secure storage)
 def load_keys():
@@ -118,14 +125,21 @@ async def login(
     with the necessary parameters for the LTI launch.
     """
     try:
+        
+         # iss=https%3A%2F%2Flms.valis.jala-one.com&login_hint=ad9e74438daf253e014e9eceb362c8783116a36a&client_id=10000000000006&lti_deployment_id=9%3Ad89e331c21d21263871f13e1c0744565df26572c&target_link_uri=https%3A%2F%2Ffastapi-example-xi.vercel.app%2Fapi%2Flaunch&lti_message_hint=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXJpZmllciI6ImQ2MDNlZGNmMGFjMWRmMzJmZDY4NDU2YjU3ZWFmZjhjNTBkNGNkODBmMTA0OGVlNTEzZTQwZjM0ZTgzMWM2ZTA4NWI5ODQ4YmRhODE2MDNkMWZhNDJhZDk2NzlhMTEyMDJhNzEzYWYyZWRhZTEyNjRiMzk2MDRmMDNhYzI2NDdhIiwiY2FudmFzX2RvbWFpbiI6Imxtcy52YWxpcy5qYWxhLW9uZS5jb20iLCJjb250ZXh0X3R5cGUiOiJDb3Vyc2UiLCJjb250ZXh0X2lkIjoxMDAwMDAwMDAwMDAwMSwiY2FudmFzX2xvY2FsZSI6ImVuIiwiaW5jbHVkZV9zdG9yYWdlX3RhcmdldCI6dHJ1ZSwiZXhwIjoxNzU2ODYyNDkxfQ.EA3A3S8Gat2aHyOArHO5vM_7bf9jml_fXeavyXMdQho&canvas_environment=prod&canvas_region=not_configured&deployment_id=9%3Ad89e331c21d21263871f13e1c0744565df26572c&lti_storage_target=post_message_forwarding
+        target_link_uri = target_link_uri or request.query_params.get('target_link_uri')
+        print(f"###################### /login/ target_link_uri: {target_link_uri}")
+        # Get the launch URL (where the platform will redirect after login)
+        launch_url = target_link_uri or get_launch_url(request)
+        print(f"###################### /login/ launch_url: {launch_url}")
+        launch_data_storage = get_launch_data_storage()
         # Create OIDC login handler
         oidc_login = FastAPIOIDCLogin(
             request=request,
-            tool_config=tool_conf
+            tool_config=tool_conf,
+            launch_data_storage=launch_data_storage
         )
         
-        # Get the launch URL (where the platform will redirect after login)
-        launch_url = target_link_uri or get_launch_url(request)
         
         # Perform redirect back to platform
         redirect_obj = oidc_login.get_redirect_object()
@@ -155,10 +169,13 @@ async def launch(request: Request):
     This endpoint receives the LTI launch message after successful OIDC login.
     """
     try:
+        launch_data_storage = get_launch_data_storage()
+        
         # Create message launch handler
         message_launch = FastAPIMessageLaunch(
             request=request,
-            tool_config=tool_conf
+            tool_config=tool_conf,
+            launch_data_storage=launch_data_storage
         )
         
         # Validate the launch
@@ -227,15 +244,39 @@ async def health():
     """Health check endpoint."""
     return {"status": "healthy", "lti_configured": bool(tool_conf)}
 
-# Error handlers
-@app.exception_handler(404)
-async def not_found(request: Request, exc):
-    return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+# # Error handlers
+# @app.exception_handler(404)
+# async def not_found(request: Request, exc):
+#     return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
 
-@app.exception_handler(500)
-async def internal_error(request: Request, exc):
-    return templates.TemplateResponse("500.html", {"request": request}, status_code=500)
+# @app.exception_handler(500)
+# async def internal_error(request: Request, exc):
+#     return templates.TemplateResponse("500.html", {"request": request}, status_code=500)
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=4000)
+# if __name__ == "__main__":
+#     import uvicorn
+    
+#     print("🚀 Starting FastAPI LTI 1.3 Example Server...")
+#     print("📋 Available endpoints:")
+#     print("   • Main page: http://localhost:4000/")
+#     print("   • API docs: http://localhost:4000/docs")
+#     print("   • Health check: http://localhost:4000/health")
+#     print("   • JWKS endpoint: http://localhost:4000/jwks")
+#     print("   • Login endpoint: http://localhost:4000/login")
+#     print("   • Launch endpoint: http://localhost:4000/launch")
+    
+#     if not keys_loaded:
+#         print("\n⚠️  WARNING: RSA keys not found!")
+#         print("   Run 'python generate_keys.py' to generate them.")
+#         print("   The app will work for basic testing, but LTI functionality requires keys.")
+    
+#     print("\n🌐 Server starting on http://localhost:4000")
+#     print("   Press Ctrl+C to stop the server")
+    
+#     uvicorn.run(
+#         "main:app",
+#         host="0.0.0.0",
+#         port=3030,
+#         reload=True,
+#         log_level="info"
+#     )

@@ -32,4 +32,19 @@ class FastAPIRequest(Request):
         return self._request.cookies.get(key, None)
 
     def is_secure(self):
-        return self._request.url.is_secure
+        # Check if the request is using HTTPS
+        # First check the URL scheme directly
+        if self._request.url.scheme == 'https':
+            return True
+        
+        # If behind a reverse proxy (like Vercel), check X-Forwarded-Proto header
+        forwarded_proto = self._request.headers.get('X-Forwarded-Proto')
+        if forwarded_proto == 'https':
+            return True
+        
+        # Also check X-Forwarded-Ssl header (some proxies use this)
+        forwarded_ssl = self._request.headers.get('X-Forwarded-Ssl')
+        if forwarded_ssl and forwarded_ssl.lower() == 'on':
+            return True
+        
+        return False

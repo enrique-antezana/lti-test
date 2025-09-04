@@ -1,0 +1,19 @@
+{
+  "https://lms.valis.jala-one.com": [
+    {
+      "default": true,
+      "client_id": "10000000000005",
+      "auth_login_url": "https://lms.valis.jala-one.com/api/lti/authorize_redirect",
+      "auth_token_url": "https://lms.valis.jala-one.com/login/oauth2/token",
+      "key_set_url": "https://lms.valis.jala-one.com/api/lti/security/jwks",
+      "key_set": null,
+      "private_key_file": "/var/task/api/config/private.key",
+      "public_key_file": "/var/task/api/config/public.key",
+      "deployment_ids": [
+        "6:8ea1541666cdcdf85d9aae194078dbe76077af87",
+        "7:d89e331c21d21263871f13e1c0744565df26572c",
+        "8:8ea1541666cdcdf85d9aae194078dbe76077af87"
+      ]
+    }
+  ]
+}
