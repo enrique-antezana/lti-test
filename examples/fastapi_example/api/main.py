@@ -430,7 +430,7 @@ async def configure_deep_link(request: Request, launch_id: str):
         for character in characters:
             resource = DeepLinkResource()
             resource.set_title(f"Rick and Morty Character: {character['name']}")
-            resource.set_url(f"{str(request.base_url)}api/character-detail/{character['id']}")
+            resource.set_url(f"{str(request.base_url)}api/character-detail")
             resource.set_icon_url(character['image'])
             resource.set_custom_params({
                 "character_id": str(character['id']),
@@ -469,8 +469,8 @@ async def handle_character_selection(request: Request):
         raise HTTPException(status_code=400, detail=f"Character selection failed: {str(e)}")
 
 @app.get("/character-detail/{character_id}", response_class=HTMLResponse)
-async def character_detail(request: Request, character_id: int):
-    """Display character details for a specific character."""
+async def character_detail_get(request: Request, character_id: int):
+    """Display character details for a specific character (GET method)."""
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(f"https://rickandmortyapi.com/api/character/{character_id}")
@@ -485,10 +485,41 @@ async def character_detail(request: Request, character_id: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch character: {str(e)}")
 
-@app.post("/api/character-detail/{character_id}", response_class=HTMLResponse)
-async def character_detail(request: Request, character_id: int):
-    """Display character details for a specific character."""
+@app.post("/api/character-detail", response_class=HTMLResponse)
+async def character_detail_post(request: Request):
+    """Display character details for a specific character (POST method with LTI launch)."""
     try:
+        # Get form data for LTI launch
+        form_data = await request.form()
+        launch_data_storage = get_launch_data_storage()
+        fastapi_request = FastAPIRequest(request, form_data)
+        
+        # Create message launch handler to get LTI data
+        message_launch = FastAPIMessageLaunch(
+            request=fastapi_request,
+            tool_config=tool_conf,
+            launch_data_storage=launch_data_storage
+        )
+        
+        # Get launch data
+        launch_data = message_launch.get_launch_data()
+        
+        # Extract character_id from LTI custom claims
+        custom_claims = launch_data.get("https://purl.imsglobal.org/spec/lti/claim/custom", {})
+        character_id = custom_claims.get("character_id")
+        
+        print(f"###################### Character Detail - Launch data: {launch_data}")
+        print(f"###################### Character Detail - Custom claims: {custom_claims}")
+        print(f"###################### Character Detail - Character ID: {character_id}")
+        
+        if not character_id:
+            raise HTTPException(status_code=400, detail="Missing character_id in LTI custom claims")
+        
+        try:
+            character_id = int(character_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid character_id format")
+        
         async with httpx.AsyncClient() as client:
             response = await client.get(f"https://rickandmortyapi.com/api/character/{character_id}")
             if response.status_code == 200:
