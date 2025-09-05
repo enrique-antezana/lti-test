@@ -146,6 +146,103 @@
               </div>
             </div>
           </div>
+
+          <!-- LTI Launch Data Section -->
+          {% if launch_data %}
+          <div class="card character-card mt-4">
+            <div class="card-header">
+              <h5 class="mb-0">LTI Launch Information</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <h6>User Information</h6>
+                  {% set user_info =
+                  launch_data.get('https://purl.imsglobal.org/spec/lti/claim/user',
+                  {}) %}
+                  <p>
+                    <strong>Name:</strong> {{ user_info.get('name', 'N/A') }}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {{ user_info.get('email', 'N/A') }}
+                  </p>
+                  <p>
+                    <strong>Given Name:</strong> {{ user_info.get('given_name',
+                    'N/A') }}
+                  </p>
+                  <p>
+                    <strong>Family Name:</strong> {{
+                    user_info.get('family_name', 'N/A') }}
+                  </p>
+
+                  <h6 class="mt-3">Context Information</h6>
+                  {% set context_info =
+                  launch_data.get('https://purl.imsglobal.org/spec/lti/claim/context',
+                  {}) %}
+                  <p>
+                    <strong>Course Title:</strong> {{ context_info.get('title',
+                    'N/A') }}
+                  </p>
+                  <p>
+                    <strong>Course ID:</strong> {{ context_info.get('id', 'N/A')
+                    }}
+                  </p>
+                  <p>
+                    <strong>Course Label:</strong> {{ context_info.get('label',
+                    'N/A') }}
+                  </p>
+                </div>
+
+                <div class="col-md-6">
+                  <h6>Resource Link Information</h6>
+                  {% set resource_link =
+                  launch_data.get('https://purl.imsglobal.org/spec/lti/claim/resource_link',
+                  {}) %}
+                  <p>
+                    <strong>Resource ID:</strong> {{ resource_link.get('id',
+                    'N/A') }}
+                  </p>
+                  <p>
+                    <strong>Resource Title:</strong> {{
+                    resource_link.get('title', 'N/A') }}
+                  </p>
+                  <p>
+                    <strong>Resource Description:</strong> {{
+                    resource_link.get('description', 'N/A') }}
+                  </p>
+
+                  <h6 class="mt-3">Custom Claims</h6>
+                  {% if custom_claims %} {% for key, value in
+                  custom_claims.items() %}
+                  <p><strong>{{ key }}:</strong> {{ value }}</p>
+                  {% endfor %} {% else %}
+                  <p>No custom claims available</p>
+                  {% endif %}
+
+                  <h6 class="mt-3">Launch Type</h6>
+                  <p>
+                    <strong>Message Type:</strong> {{
+                    launch_data.get('https://purl.imsglobal.org/spec/lti/claim/message_type',
+                    'N/A') }}
+                  </p>
+                  <p>
+                    <strong>Version:</strong> {{
+                    launch_data.get('https://purl.imsglobal.org/spec/lti/claim/version',
+                    'N/A') }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <h6>Raw Launch Data (JSON)</h6>
+                <pre
+                  class="bg-light p-3 rounded"
+                  style="max-height: 300px; overflow-y: auto"
+                ><code>{{ launch_data | tojson(indent=2) }}</code></pre>
+              </div>
+            </div>
+          </div>
+          {% endif %}
         </div>
       </div>
     </div>

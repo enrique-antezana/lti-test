@@ -526,7 +526,9 @@ async def character_detail_post(request: Request):
                 character = response.json()
                 return templates.TemplateResponse("character_detail.html", {
                     "request": request,
-                    "character": character
+                    "character": character,
+                    "launch_data": launch_data,
+                    "custom_claims": custom_claims
                 })
             else:
                 raise HTTPException(status_code=404, detail="Character not found")
