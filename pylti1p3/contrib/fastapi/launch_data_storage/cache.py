@@ -42,6 +42,6 @@ class SimpleCache:
 class FastAPICacheDataStorage(CacheDataStorage):
     _cache = None
 
-    def __init__(self, cache, **kwargs):
+    def __init__(self, cache=None, **kwargs):
         self._cache = cache or SimpleCache()
-        super().__init__(cache, **kwargs)
+        super().__init__(self._cache, **kwargs)
