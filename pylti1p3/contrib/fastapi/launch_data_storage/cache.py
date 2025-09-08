@@ -3,6 +3,9 @@ from typing import Any, Dict
 
 from pylti1p3.launch_data_storage.cache import CacheDataStorage
 
+# Global shared cache instance to persist across requests
+_shared_cache = None
+
 class SimpleCache:
     """
     Simple in-memory cache with expiration support.
@@ -43,5 +46,12 @@ class FastAPICacheDataStorage(CacheDataStorage):
     _cache = None
 
     def __init__(self, cache=None, **kwargs):
-        self._cache = cache or SimpleCache()
+        global _shared_cache
+        if cache is None:
+            # Use shared cache instance to persist across requests
+            if _shared_cache is None:
+                _shared_cache = SimpleCache()
+            self._cache = _shared_cache
+        else:
+            self._cache = cache
         super().__init__(self._cache, **kwargs)
